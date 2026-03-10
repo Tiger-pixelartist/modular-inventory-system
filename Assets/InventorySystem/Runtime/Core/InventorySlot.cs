@@ -39,7 +39,7 @@ namespace IS.Core
 
             if (!CanStack(item))
                 return amount;
-
+            Item = item;
             int spaceLeft = Item.MaxStackSize - Quantity;
             int toAdd = UnityEngine.Mathf.Min(spaceLeft, amount);
 
@@ -60,6 +60,7 @@ namespace IS.Core
 
             return amount - removed;
         }
+
 
         public void Clear()
         {

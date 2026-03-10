@@ -8,7 +8,7 @@ namespace IS.Core
     public class Inventory : MonoBehaviour
     {
         [Header("Configuration")]
-        [SerializeField] private int capacity = 20;
+        [SerializeField] public int capacity = 20;
 
         private List<InventorySlot> slots = new List<InventorySlot>();
 
@@ -17,6 +17,15 @@ namespace IS.Core
 
         public event Action OnInventoryChanged;
 
+        public InventorySlot GetFirstEmptySlot()
+        {
+            foreach (var slot in slots)
+            {
+                if (slot.IsEmpty)
+                    return slot;
+            }
+            return null;
+        }
 
         private void Awake()
         {
@@ -25,6 +34,11 @@ namespace IS.Core
                 slots.Add(new InventorySlot());
             }
         }
+        public void NotifyChanged()
+        {
+            OnInventoryChanged?.Invoke();
+        }
+
 
         private void Initialize()
         {

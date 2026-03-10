@@ -11,6 +11,16 @@ namespace IS.UI
         [SerializeField] private InventorySlotView slotPrefab;
         [SerializeField] private Transform slotsParent;
         [SerializeField] private RectTransform panelRect;
+        [SerializeField] private InventoryInteractionController controller;
+
+        private void Awake()
+        {
+            if (inventory == null)
+                inventory = GetComponent<Inventory>();
+
+            if (controller == null)
+                controller = GetComponent<InventoryInteractionController>();
+        }
 
         private void Start()
         {
@@ -25,60 +35,55 @@ namespace IS.UI
             Build();
             Refresh();
         }
-        private void Awake()
-        {
-            if (inventory == null)
-                inventory = GetComponent<Inventory>();
-        }
-
         private void Build()
         {
-            // Limpiar hijos
-            foreach (Transform child in slotsParent)
-            {
-                Destroy(child.gameObject);
-            }
+            for (int i = slotsParent.childCount - 1; i >= 0; i--)
+                DestroyImmediate(slotsParent.GetChild(i).gameObject);
 
-            // Crear slots visuales según capacidad
             foreach (var slot in inventory.Slots)
             {
-                var instance = Instantiate(slotPrefab, slotsParent);
-                instance.Bind(slot);
+                
+
+                    var instance = Instantiate(slotPrefab, slotsParent);
+                    instance.SetController(controller);
+                    instance.Bind(slot);
+                
+
             }
 
-            AdjustPanelSize();
+            AdjustSize();
         }
 
-        private void AdjustPanelSize()
+        private void AdjustSize()
         {
             var grid = slotsParent.GetComponent<GridLayoutGroup>();
+            if (grid == null) return;
 
-            int totalSlots = inventory.Slots.Count;
+            int total = inventory.Slots.Count;
             int columns = grid.constraintCount;
-            int rows = Mathf.CeilToInt((float)totalSlots / columns);
+            int rows = Mathf.CeilToInt((float)total / columns);
 
-            float width = (columns * grid.cellSize.x) +
-                          ((columns - 1) * grid.spacing.x) +
-                          grid.padding.left + grid.padding.right;
+            float width = (columns * grid.cellSize.x)
+                        + ((columns - 1) * grid.spacing.x)
+                        + grid.padding.left + grid.padding.right;
 
-            float height = (rows * grid.cellSize.y) +
-                           ((rows - 1) * grid.spacing.y) +
-                           grid.padding.top + grid.padding.bottom;
+            float height = (rows * grid.cellSize.y)
+                         + ((rows - 1) * grid.spacing.y)
+                         + grid.padding.top + grid.padding.bottom;
 
-            var rect = slotsParent.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(width, height);
+            slotsParent.GetComponent<RectTransform>().sizeDelta = new Vector2(width, height);
 
-            // Si quieres que el panel también se adapte:
-            panelRect.sizeDelta = new Vector2(width + 40, height + 40);
+            if (panelRect != null)
+                panelRect.sizeDelta = new Vector2(width + 40, height + 40);
         }
-
 
         private void Refresh()
         {
             foreach (Transform child in slotsParent)
             {
                 var slotView = child.GetComponent<InventorySlotView>();
-                slotView.Refresh();
+                if (slotView != null)
+                    slotView.Refresh();
             }
         }
 
